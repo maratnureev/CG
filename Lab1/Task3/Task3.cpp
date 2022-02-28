@@ -1,180 +1,148 @@
-﻿// Task3.cpp : Определяет точку входа для приложения.
-//
+﻿#include <windows.h>
+#include <windowsx.h>
+#include <tchar.h>
+#include <math.h>
 
-#include "framework.h"
-#include "Task3.h"
+TCHAR const CLASS_NAME[] = _T("MainWndClass");
+TCHAR const WINDOW_TITLE[] = _T("My first window");
 
-#define MAX_LOADSTRING 100
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+int MainLoop();
+bool RegisterWndClass(HINSTANCE hInstance);
+HWND CreateMainWindow(HINSTANCE hInstance);
 
-// Глобальные переменные:
-HINSTANCE hInst;                                // текущий экземпляр
-WCHAR szTitle[MAX_LOADSTRING];                  // Текст строки заголовка
-WCHAR szWindowClass[MAX_LOADSTRING];            // имя класса главного окна
+struct RGBColor {
+	byte r;
+	byte g;
+	byte b;
+};
 
-// Отправить объявления функций, включенных в этот модуль кода:
-ATOM                MyRegisterClass(HINSTANCE hInstance);
-BOOL                InitInstance(HINSTANCE, int);
-LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
-
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPWSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
+int WINAPI WinMain(
+	HINSTANCE hInstance,
+	HINSTANCE /*hPrevInstance*/,
+	LPSTR /*lpCmdLine*/,
+	int nCmdShow)
 {
-    UNREFERENCED_PARAMETER(hPrevInstance);
-    UNREFERENCED_PARAMETER(lpCmdLine);
+	// Регистрируем класс главного окна
+	if (!RegisterWndClass(hInstance))
+	{
+		return 1;
+	}
 
-    // TODO: Разместите код здесь.
+	// Создаем главное окно приложения
+	HWND hMainWindow = CreateMainWindow(hInstance);
+	if (hMainWindow == NULL)
+	{
+		return 1;
+	}
 
-    // Инициализация глобальных строк
-    LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(hInstance, IDC_TASK3, szWindowClass, MAX_LOADSTRING);
-    MyRegisterClass(hInstance);
+	// Показываем главное окно приложения
+	ShowWindow(hMainWindow, nCmdShow);
+	UpdateWindow(hMainWindow);
 
-    // Выполнить инициализацию приложения:
-    if (!InitInstance (hInstance, nCmdShow))
-    {
-        return FALSE;
-    }
-
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_TASK3));
-
-    MSG msg;
-
-    // Цикл основного сообщения:
-    while (GetMessage(&msg, nullptr, 0, 0))
-    {
-        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-    }
-
-    return (int) msg.wParam;
+	// Запускаем цикл выборки сообщений, пока не получим 
+	// сигнал о завершении приложения
+	return MainLoop();
 }
 
-
-
-//
-//  ФУНКЦИЯ: MyRegisterClass()
-//
-//  ЦЕЛЬ: Регистрирует класс окна.
-//
-ATOM MyRegisterClass(HINSTANCE hInstance)
+HWND CreateMainWindow(HINSTANCE hInstance)
 {
-    WNDCLASSEXW wcex;
+	HWND hMainWindow = CreateWindowEx(
+		0,
+		CLASS_NAME,
+		WINDOW_TITLE,
+		WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT, CW_USEDEFAULT,
+		CW_USEDEFAULT, CW_USEDEFAULT,
+		NULL,
+		NULL,
+		hInstance,
+		NULL);
 
-    wcex.cbSize = sizeof(WNDCLASSEX);
-
-    wcex.style          = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = WndProc;
-    wcex.cbClsExtra     = 0;
-    wcex.cbWndExtra     = 0;
-    wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_TASK3));
-    wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_TASK3);
-    wcex.lpszClassName  = szWindowClass;
-    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
-
-    return RegisterClassExW(&wcex);
+	return hMainWindow;
 }
 
-//
-//   ФУНКЦИЯ: InitInstance(HINSTANCE, int)
-//
-//   ЦЕЛЬ: Сохраняет маркер экземпляра и создает главное окно
-//
-//   КОММЕНТАРИИ:
-//
-//        В этой функции маркер экземпляра сохраняется в глобальной переменной, а также
-//        создается и выводится главное окно программы.
-//
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
+int MainLoop()
 {
-   hInst = hInstance; // Сохранить маркер экземпляра в глобальной переменной
+	MSG msg;
+	BOOL res;
+	while ((res = GetMessage(&msg, NULL, 0, 0)) != 0)
+	{
+		if (res == -1)
+		{
+			// произошла ошибка - нужно обработать ее и, вероятно,
+			// завершить работу приложения
+		}
+		else
+		{
+			// Если это сообщение о нажатии виртуальной клавиши,
+			// то добавляем в очередь сообщений сообщения, несущие информацию о
+			// коде вводимого пользователем символа
+			TranslateMessage(&msg);
+			// передаем сообщение в соответствующую оконную процедуру
+			DispatchMessage(&msg);
+		}
+	}
 
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
-
-   if (!hWnd)
-   {
-      return FALSE;
-   }
-
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
-
-   return TRUE;
+	// сюда мы попадем только в том случае извлечения сообщения WM_QUIT
+	// msg.wParam содержит код возврата, помещенный при помощи функции PostQuitMessage()
+	return msg.wParam;
 }
 
-//
-//  ФУНКЦИЯ: WndProc(HWND, UINT, WPARAM, LPARAM)
-//
-//  ЦЕЛЬ: Обрабатывает сообщения в главном окне.
-//
-//  WM_COMMAND  - обработать меню приложения
-//  WM_PAINT    - Отрисовка главного окна
-//  WM_DESTROY  - отправить сообщение о выходе и вернуться
-//
-//
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+void OnDestroy(HWND /*hWnd*/)
 {
-    switch (message)
-    {
-    case WM_COMMAND:
-        {
-            int wmId = LOWORD(wParam);
-            // Разобрать выбор в меню:
-            switch (wmId)
-            {
-            case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-                break;
-            case IDM_EXIT:
-                DestroyWindow(hWnd);
-                break;
-            default:
-                return DefWindowProc(hWnd, message, wParam, lParam);
-            }
-        }
-        break;
-    case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: Добавьте сюда любой код прорисовки, использующий HDC...
-            EndPaint(hWnd, &ps);
-        }
-        break;
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
-    }
-    return 0;
+	PostQuitMessage(0);
 }
 
-// Обработчик сообщений для окна "О программе".
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+void DrawSolidEllipse(HDC dc, COLORREF color, int x0, int y0, int radius)
 {
-    UNREFERENCED_PARAMETER(lParam);
-    switch (message)
-    {
-    case WM_INITDIALOG:
-        return (INT_PTR)TRUE;
+	const double PI = 3.14159;
 
-    case WM_COMMAND:
-        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-        {
-            EndDialog(hDlg, LOWORD(wParam));
-            return (INT_PTR)TRUE;
-        }
-        break;
-    }
-    return (INT_PTR)FALSE;
+	for (double angle = 0; angle <= 2 * PI; angle += 0.01)
+		SetPixel(dc, x0 + radius * cos(angle), y0 + radius * sin(angle), color);
+}
+
+void OnPaint(HWND hwnd)
+{
+	PAINTSTRUCT ps;
+	HDC dc = BeginPaint(hwnd, &ps);
+
+	DrawSolidEllipse(dc, 0x0000FF00, 350, 350, 50);
+
+	EndPaint(hwnd, &ps);
+}
+
+LRESULT CALLBACK WindowProc(
+	HWND hwnd,
+	UINT uMsg,
+	WPARAM wParam,
+	LPARAM lParam)
+{
+	switch (uMsg)
+	{
+		HANDLE_MSG(hwnd, WM_DESTROY, OnDestroy);
+		HANDLE_MSG(hwnd, WM_PAINT, OnPaint);
+	}
+	return DefWindowProc(hwnd, uMsg, wParam, lParam);
+}
+
+bool RegisterWndClass(HINSTANCE hInstance)
+{
+	WNDCLASSEX wndClass =
+	{
+		sizeof(wndClass),	//UINT cbSize;
+		CS_HREDRAW | CS_VREDRAW, //UINT style;
+		&WindowProc,		//WNDPROC lpfnWndProc;
+		0,					//int cbClsExtra;
+		0,					//int cbWndExtra;
+		hInstance,			//HINSTANCE hInstance;
+		NULL,				//HICON hIcon;
+		LoadCursor(NULL, IDC_ARROW), //HCURSOR hCursor;
+		(HBRUSH)(COLOR_BTNFACE + 1), //HBRUSH hbrBackground;
+		NULL,				//LPCTSTR lpszMenuName;
+		CLASS_NAME,			//LPCTSTR lpszClassName;
+		NULL,				//HICON hIconSm;
+	};
+
+	return RegisterClassEx(&wndClass) != FALSE;
 }
