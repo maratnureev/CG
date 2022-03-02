@@ -1,6 +1,7 @@
 ﻿#include <windows.h>
 #include <windowsx.h>
 #include <tchar.h>
+#include <math.h>
 
 TCHAR const CLASS_NAME[] = _T("MainWndClass");
 TCHAR const WINDOW_TITLE[] = _T("My first window");
@@ -93,76 +94,18 @@ void OnDestroy(HWND /*hWnd*/)
 	PostQuitMessage(0);
 }
 
-void DrawSolidRectangle(HDC dc, RGBColor color, int x1, int y1, int x2, int y2)
+void DrawEllipse(HDC dc, COLORREF color, int x0, int y0, int radius, bool isFiled, COLORREF fillColor)
 {
-	HPEN pen = CreatePen(PS_SOLID, 2, RGB(color.r, color.g, color.b));
-
-	LOGBRUSH brushInfo;
-	brushInfo.lbStyle = BS_SOLID;
-	brushInfo.lbColor = RGB(color.r, color.g, color.b);
-	brushInfo.lbHatch = 0;
-	HBRUSH brush = CreateBrushIndirect(&brushInfo);
-
-	HPEN oldPen = SelectPen(dc, pen);
-	HBRUSH oldBrush = SelectBrush(dc, brush);
-
-	Rectangle(dc,
-		x1, y1,
-		x2, y2
-	);
-
-	SelectPen(dc, oldPen);
-	SelectBrush(dc, oldBrush);
-
-	DeletePen(pen);
-	DeleteBrush(brush);
-}
-
-void DrawSolidTriangle(HDC dc, RGBColor color, POINT* vertexes)
-{
-	HPEN pen = CreatePen(PS_SOLID, 2, RGB(color.r, color.g, color.b));
-
-	LOGBRUSH brushInfo;
-	brushInfo.lbStyle = BS_SOLID;
-	brushInfo.lbColor = RGB(color.r, color.g, color.b);
-	brushInfo.lbHatch = 0;
-	HBRUSH brush = CreateBrushIndirect(&brushInfo);
-
-	HPEN oldPen = SelectPen(dc, pen);
-	HBRUSH oldBrush = SelectBrush(dc, brush);
-
-	Polygon(dc,
-		vertexes,
-		3
-	);
-
-	SelectPen(dc, oldPen);
-	SelectBrush(dc, oldBrush);
-
-	DeletePen(pen);
-	DeleteBrush(brush);
-}
-
-void DrawSolidEllipse(HDC dc, RGBColor color, int left, int top, int right, int bottom)
-{
-	HPEN pen = CreatePen(PS_SOLID, 2, RGB(color.r, color.g, color.b));
-
-	LOGBRUSH brushInfo;
-	brushInfo.lbStyle = BS_SOLID;
-	brushInfo.lbColor = RGB(color.r, color.g, color.b);
-	brushInfo.lbHatch = 0;
-	HBRUSH brush = CreateBrushIndirect(&brushInfo);
-
-	HPEN oldPen = SelectPen(dc, pen);
-	HBRUSH oldBrush = SelectBrush(dc, brush);
-
-	Ellipse(dc, left, top, right, bottom);
-
-	SelectPen(dc, oldPen);
-	SelectBrush(dc, oldBrush);
-
-	DeletePen(pen);
-	DeleteBrush(brush);
+	for (int x = x0 - radius; x < x0 + radius; x++)
+		for (int y = y0 - radius; y < y0 + radius; y++)
+		{
+			// убрать квадратные корни, алгоритм Брезенхейн
+			double calculatedRadius = sqrt((x - x0) * (x - x0) + (y - y0) * (y - y0));
+			if ((int)calculatedRadius == radius)
+				SetPixel(dc, x, y, color);
+			if (calculatedRadius < radius && isFiled)
+				SetPixel(dc, x, y, fillColor);
+		}
 }
 
 void OnPaint(HWND hwnd)
@@ -170,37 +113,7 @@ void OnPaint(HWND hwnd)
 	PAINTSTRUCT ps;
 	HDC dc = BeginPaint(hwnd, &ps);
 
-	SetGraphicsMode(dc, GM_ADVANCED);
-	XFORM transform;
-	RECT clientRect;
-	GetClientRect(hwnd, &clientRect);
-	transform.eDx = (FLOAT)100;
-	transform.eDy = (FLOAT)100;
-	transform.eM11 = (FLOAT)1.0;
-	transform.eM12 = (FLOAT)0.0;
-	transform.eM21 = (FLOAT)0.0;
-	transform.eM22 = (FLOAT)1.0;
-	SetWorldTransform(dc, &transform);
-
-	DrawSolidRectangle(dc, RGBColor{ 135,206,235 }, 0, 0, 800, 250);
-	DrawSolidRectangle(dc, RGBColor{ 0,120,0 }, 0, 250, 800, 500);
-	DrawSolidRectangle(dc, RGBColor{ 139,69,19 }, 200, 200 , 400, 400);
-	POINT roofVertexes[3][2] = {
-		POINT{165, 200},
-		POINT{300, 75},
-		POINT{435, 200}
-	};
-	DrawSolidRectangle(dc, RGBColor{ 255, 0, 0 }, 210, 80, 230, 200);
-	DrawSolidRectangle(dc, RGBColor{ 255, 255, 0 }, 230, 275, 270, 325);
-	DrawSolidRectangle(dc, RGBColor{ 244, 164, 96 }, 375, 220, 300, 400);
-	DrawSolidTriangle(dc, RGBColor{ 139,69,19 }, *roofVertexes);
-	DrawSolidEllipse(dc, RGBColor{ 210,105,30 }, 365, 305, 350, 315);
-	
-	for (int i = 0; i < 6; i++)
-		DrawSolidRectangle(dc, RGBColor{ 244,164,96 }, 410 + 40 * i, 260, 430 + 40 * i, 400);
-	DrawSolidRectangle(dc, RGBColor{ 244,164,96 }, 400, 290, 630, 295);
-	DrawSolidRectangle(dc, RGBColor{ 244,164,96 }, 400, 370, 630, 375);
-	
+	DrawEllipse(dc, 0x0000FF00, 350, 350, 50, true, 0x0000FF00);
 
 	EndPaint(hwnd, &ps);
 }

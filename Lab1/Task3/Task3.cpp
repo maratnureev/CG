@@ -94,12 +94,34 @@ void OnDestroy(HWND /*hWnd*/)
 	PostQuitMessage(0);
 }
 
-void DrawSolidEllipse(HDC dc, COLORREF color, int x0, int y0, int radius)
+void DrawEllipse(HDC dc, COLORREF color, int x0, int y0, int radius, bool isFiled, RGBColor fillColor)
 {
+	HPEN pen = CreatePen(PS_SOLID, 2, RGB(fillColor.r, fillColor.g, fillColor.b));
+	LOGBRUSH brushInfo;
+	brushInfo.lbStyle = BS_SOLID;
+	brushInfo.lbColor = RGB(fillColor.r, fillColor.g, fillColor.b);
+	brushInfo.lbHatch = 0;
+	HBRUSH brush = CreateBrushIndirect(&brushInfo);
+
+	HPEN oldPen = SelectPen(dc, pen);
+	HBRUSH oldBrush = SelectBrush(dc, brush);
+
 	const double PI = 3.14159;
 
 	for (double angle = 0; angle <= 2 * PI; angle += 0.01)
-		SetPixel(dc, x0 + radius * cos(angle), y0 + radius * sin(angle), color);
+	{
+		double xOffset = radius * cos(angle);
+		double yOffset = radius * sin(angle);
+		SetPixel(dc, x0 + (int)xOffset, y0 + (int)yOffset, color);
+		MoveToEx(dc, x0 + (int)xOffset, y0 + (int)yOffset, NULL);
+		LineTo(dc, x0 - (int)xOffset, y0 - (int)yOffset);
+	}
+
+	SelectPen(dc, oldPen);
+	SelectBrush(dc, oldBrush);
+
+	DeletePen(pen);
+	DeleteBrush(brush);
 }
 
 void OnPaint(HWND hwnd)
@@ -107,7 +129,7 @@ void OnPaint(HWND hwnd)
 	PAINTSTRUCT ps;
 	HDC dc = BeginPaint(hwnd, &ps);
 
-	DrawSolidEllipse(dc, 0x0000FF00, 350, 350, 50);
+	DrawEllipse(dc, 0x0000FF00, 350, 350, 50, true, RGBColor{ 255, 0, 0 });
 
 	EndPaint(hwnd, &ps);
 }
