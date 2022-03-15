@@ -10,6 +10,12 @@ int MainLoop();
 bool RegisterWndClass(HINSTANCE hInstance);
 HWND CreateMainWindow(HINSTANCE hInstance);
 
+struct RGBColor {
+	byte r;
+	byte g;
+	byte b;
+};
+
 int WINAPI WinMain(
 	HINSTANCE hInstance,
 	HINSTANCE /*hPrevInstance*/,
@@ -87,132 +93,123 @@ void OnDestroy(HWND /*hWnd*/)
 	PostQuitMessage(0);
 }
 
+void DrawSolidRectangle(HDC dc, RGBColor color, int x1, int y1, int x2, int y2)
+{
+	HPEN pen = CreatePen(PS_SOLID, 2, RGB(color.r, color.g, color.b));
+
+	LOGBRUSH brushInfo;
+	brushInfo.lbStyle = BS_SOLID;
+	brushInfo.lbColor = RGB(color.r, color.g, color.b);
+	brushInfo.lbHatch = 0;
+	HBRUSH brush = CreateBrushIndirect(&brushInfo);
+
+	HPEN oldPen = SelectPen(dc, pen);
+	HBRUSH oldBrush = SelectBrush(dc, brush);
+
+	Rectangle(dc,
+		x1, y1,
+		x2, y2
+	);
+
+	SelectPen(dc, oldPen);
+	SelectBrush(dc, oldBrush);
+
+	DeletePen(pen);
+	DeleteBrush(brush);
+}
+
+void DrawSolidPoligon(HDC dc, RGBColor color, POINT* vertexes, int vertexCount)
+{
+	HPEN pen = CreatePen(PS_SOLID, 2, RGB(color.r, color.g, color.b));
+
+	LOGBRUSH brushInfo;
+	brushInfo.lbStyle = BS_SOLID;
+	brushInfo.lbColor = RGB(color.r, color.g, color.b);
+	brushInfo.lbHatch = 0;
+	HBRUSH brush = CreateBrushIndirect(&brushInfo);
+
+	HPEN oldPen = SelectPen(dc, pen);
+	HBRUSH oldBrush = SelectBrush(dc, brush);
+
+	Polygon(dc,
+		vertexes,
+		vertexCount
+	);
+
+	SelectPen(dc, oldPen);
+	SelectBrush(dc, oldBrush);
+
+	DeletePen(pen);
+	DeleteBrush(brush);
+}
+
+void DrawSolidEllipse(HDC dc, RGBColor color, int left, int top, int right, int bottom)
+{
+	HPEN pen = CreatePen(PS_SOLID, 2, RGB(color.r, color.g, color.b));
+
+	LOGBRUSH brushInfo;
+	brushInfo.lbStyle = BS_SOLID;
+	brushInfo.lbColor = RGB(color.r, color.g, color.b);
+	brushInfo.lbHatch = 0;
+	HBRUSH brush = CreateBrushIndirect(&brushInfo);
+
+	HPEN oldPen = SelectPen(dc, pen);
+	HBRUSH oldBrush = SelectBrush(dc, brush);
+
+	Ellipse(dc, left, top, right, bottom);
+
+	SelectPen(dc, oldPen);
+	SelectBrush(dc, oldBrush);
+
+	DeletePen(pen);
+	DeleteBrush(brush);
+}
+
 void OnPaint(HWND hwnd)
 {
 	PAINTSTRUCT ps;
 	HDC dc = BeginPaint(hwnd, &ps);
-
-	HPEN pen = CreatePen(PS_SOLID, 2, RGB(255, 255, 0));
-
-	// создаем желтую кисть
-	LOGBRUSH brushInfo;
-	brushInfo.lbStyle = BS_SOLID;
-	brushInfo.lbColor = RGB(255, 255, 0);
-	brushInfo.lbHatch = 0;
-	HBRUSH brush = CreateBrushIndirect(&brushInfo);
-
-	// выбираем перо и кисть в контексте устройства, запоминая ранее выбранные объекты
-	HPEN oldPen = SelectPen(dc, pen);
-	HBRUSH oldBrush = SelectBrush(dc, brush);
 	 
 	// Н
-	Rectangle(dc,		
-		100, 50,	
-		150, 350	
-	);
-	Rectangle(dc,	
-		150, 175,	
-		250, 225	
-	);
-	Rectangle(dc,
-		250, 50,
-		300, 350
-	);
-
+	DrawSolidRectangle(dc, RGBColor{ 255, 255, 0 }, 100, 50, 150, 350);
+	DrawSolidRectangle(dc, RGBColor{ 255, 255, 0 }, 150, 175, 250, 225);
+	DrawSolidRectangle(dc, RGBColor{ 255, 255, 0 }, 250, 50, 300, 350);
 	// M
-
-	HPEN pen2 = CreatePen(PS_SOLID, 2, RGB(0, 0, 255));
-
-	brushInfo.lbColor = RGB(0, 0, 255);
-	HBRUSH brush2 = CreateBrushIndirect(&brushInfo);
-	SelectBrush(dc, brush2);
-	SelectPen(dc, pen2);
-
-	Rectangle(dc,
-		350, 50,
-		400, 350
-	);
-
+	
+	DrawSolidRectangle(dc, RGBColor{ 0, 0, 255 }, 350, 50, 400, 350);
 	POINT polygonPoints[4][2] = {
 		POINT{350, 50},
 		POINT{400, 50},
 		POINT{475, 200},
 		POINT{450, 200}
 	};
-
-	Polygon(dc,
-		*polygonPoints,
-		4
-	);
-
+	DrawSolidPoligon(dc, RGBColor{ 0, 0, 255 }, *polygonPoints, 4);
 	POINT polygonPoints2[4][2] = {
 		POINT{525, 50},
 		POINT{575, 50},
 		POINT{475, 200},
 		POINT{450, 200}
 	};
-
-	Polygon(dc,
-		*polygonPoints2,
-		4
-	);
-
-	Rectangle(dc,
-		525, 50,
-		575, 350
-	);
-
+	DrawSolidPoligon(dc, RGBColor{ 0, 0, 255 }, *polygonPoints2, 4);
+	DrawSolidRectangle(dc, RGBColor{ 0, 0, 255 }, 525, 50, 575, 350);
+	
 	//M
-	 
-	HPEN pen3 = CreatePen(PS_SOLID, 2, RGB(255, 0, 255));
-
-	brushInfo.lbColor = RGB(255, 0, 255);
-	HBRUSH brush3 = CreateBrushIndirect(&brushInfo);
-	SelectBrush(dc, brush3);
-	SelectPen(dc, pen3);
-
-	Rectangle(dc,
-		625, 50,
-		675, 350
-	);
-
+	DrawSolidRectangle(dc, RGBColor{ 0, 255, 255 }, 625, 50, 675, 350);
 	POINT polygonPoints3[4][2] = {
 		POINT{625, 50},
 		POINT{675, 50},
 		POINT{750, 200},
 		POINT{725, 200}
 	};
-
-	Polygon(dc,
-		*polygonPoints3,
-		4
-	);
-
+	DrawSolidPoligon(dc, RGBColor{ 0, 255, 255 }, *polygonPoints3, 4);
 	POINT polygonPoints4[4][2] = {
 		POINT{800, 50},
 		POINT{850, 50},
 		POINT{750, 200},
 		POINT{725, 200}
 	};
-
-	Polygon(dc,
-		*polygonPoints4,
-		4
-	);
-
-	Rectangle(dc,
-		800, 50,
-		850, 350
-	);
-
-	// выбираем ранее сохраненные объекты GDI в контексте устройства
-	// при этом pen и brush автоматически становятся в нем не выбраны
-	SelectPen(dc, oldPen);
-	SelectBrush(dc, oldBrush);
-
-	// объекты GDI можно удалять если они не выбраны ни в одном из контекстов
-	DeletePen(pen);
-	DeleteBrush(brush);
+	DrawSolidPoligon(dc, RGBColor{ 0, 255, 255 }, *polygonPoints4, 4);
+	DrawSolidRectangle(dc, RGBColor{ 0, 255, 255 }, 800, 50, 850, 350);
 
 	EndPaint(hwnd, &ps);
 }
