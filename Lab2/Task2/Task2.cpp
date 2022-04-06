@@ -26,10 +26,6 @@ HINSTANCE g_hInstance = NULL;
 using namespace Gdiplus;
 using namespace std;
 
-Pen* pen;
-BOOL fDraw = FALSE;
-Point ptPrevious = { 0, 0 };
-auto_ptr<Bitmap> g_pBitmap;
 
 class CGdiplusInitializer
 {
@@ -159,12 +155,21 @@ void OnMouseLeftDown(HWND hWnd, LPARAM lParam)
 	fDraw = TRUE;
 	ptPrevious.X = LOWORD(lParam);
 	ptPrevious.Y = HIWORD(lParam);
+	SetCapture(hWnd);
+
+	// Change the mouse cursor to eyes. This provides a visual indication
+	// to the user that Voyeur is "peering."
+	SetCursor(LoadCursor(GetWindowInstance(hWnd),
+		MAKEINTRESOURCE(IDC_POINTER)));
 }
 
 void OnMouseMove(HWND hwnd, LPARAM lParam)
 {
+	if (GetCapture() == NULL) {
+		return;
+	}
 	if (fDraw)
-	{
+	{	
 		Graphics g(g_pBitmap.get());
 		Point ptNew = { LOWORD(lParam), HIWORD(lParam) };
 		g.DrawLine(pen, ptPrevious, ptNew);
@@ -184,6 +189,7 @@ void OnMouseLeftUp(HWND hwnd, LPARAM lParam)
 		fDraw = FALSE;
 		InvalidateRect(hwnd, NULL, TRUE);
 	}
+	ReleaseCapture();
 }
 
 void OnDestroy(HWND /*hWnd*/)
@@ -403,6 +409,9 @@ LRESULT CALLBACK WindowProc(
 	WPARAM wParam,
 	LPARAM lParam)
 {
+	Pen* pen;
+	BOOL fDraw = FALSE;
+	Point ptPrevious = { 0, 0 };
 	pen = new Gdiplus::Pen(Color::Red, 2);
 	switch (uMsg)
 	{

@@ -107,52 +107,44 @@ private:
 		DrawHyperbola();
 	}
 	
+	//class
 	static void DrawHyperbola()
 	{
 		glBegin(GL_LINE_STRIP);
-		for (float x = 0.01f; x < 1.0f; x += 0.01f)
+		for (float x = 0.1f; x < 10.0f; x += 0.1f)
 		{
 			glColor3f(0.0f, 1.0f, 0.0f);
-			glVertex2f(x, (1 / x) / 100);
+			glVertex2f(x, (1 / x));
 		}
 		glEnd();
 		glBegin(GL_LINE_STRIP);
-		for (float x = -0.01f; x > -1.0f; x -= 0.01f)
+		for (float x = -0.1f; x > -10.0f; x -= 0.1f)
 		{
 			glColor3f(0.0f, 1.0f, 0.0f);
-			glVertex2f(x, (1 / x) / 100);
+			glVertex2f(x, (1 / x));
 		}
 		glEnd();
 	}
 
 	static void DrawCoordinateSystem()
 	{
-		glBegin(GL_LINES);
-		glColor3f(0.0f, 0.0f, 0.0f);
-		glVertex2f(-1.0f, 0.0f);
-
-		glColor3f(0.0f, 0.0f, 0.0f);
-		glVertex2f(1.0f, 0.0f);
-		
-		DrawLine(Point{ -1.0f, 0.0f }, Point{ 1.0f, 0.0f }, Color{ 0.0f, 0.0f, 0.0f });
-		DrawTriangle(Point{ 1.0f, 0.0f }, Point{ 0.975f, 0.025f }, Point{ 0.975f, -0.025f }, Color{ 0.0f, 0.0f, 0.0f });
-		DrawLine(Point{ 0.0f, -1.0f }, Point{ 0.0f, 1.0f }, Color{ 0.0f, 0.0f, 0.0f });
-		DrawTriangle(Point{ 0.0f, 1.0f }, Point{ 0.025f, 0.975f }, Point{ -0.025f, 0.975f }, Color{ 0.0f, 0.0f, 0.0f });
+		DrawLine(Point{ -10.0f, 0.0f }, Point{ 10.0f, 0.0f }, Color{ 0.0f, 0.0f, 0.0f });
+		DrawTriangle(Point{ 10.0f, 0.0f }, Point{9.75f, 0.25f }, Point{ 9.75f, -0.25f }, Color{ 0.0f, 0.0f, 0.0f });
+		DrawLine(Point{ 0.0f, -10.0f }, Point{ 0.0f, 10.0f }, Color{ 0.0f, 0.0f, 0.0f });
+		DrawTriangle(Point{ 0.0f, 10.0f }, Point{ 0.25f, 9.75f }, Point{ -0.25f, 9.75f }, Color{ 0.0f, 0.0f, 0.0f });
 
 		for (int i = 0; i < 9; i++)
 		{
-			DrawLine(Point{ 0.1f + 0.1f * i, 0.025f }, Point{ 0.1f + 0.1f * i, -0.025f }, Color{ 0.0f, 0.0f, 0.0f });
-			DrawLine(Point{ -0.1f + -0.1f * i, 0.025f }, Point{ -0.1f + -0.1f * i, -0.025f }, Color{ 0.0f, 0.0f, 0.0f });
-			DrawLine(Point{ 0.025f, 0.1f + 0.1f * i }, Point{ -0.025f, 0.1f + 0.1f * i }, Color{ 0.0f, 0.0f, 0.0f });
-			DrawLine(Point{ 0.025f, -0.1f + -0.1f * i }, Point{ -0.025f, -0.1f + -0.1f * i }, Color{ 0.0f, 0.0f, 0.0f });
+			DrawLine(Point{ 1.0f + 1.0f * i, 0.25f }, Point{ 1.0f + 1.0f * i, -0.25f }, Color{ 0.0f, 0.0f, 0.0f });
+			DrawLine(Point{ -1.0f + -1.0f * i, 0.25f }, Point{ -1.0f + -1.0f * i, -0.25f }, Color{ 0.0f, 0.0f, 0.0f });
+			DrawLine(Point{ 0.25f, 1.0f + 1.0f * i }, Point{ -0.25f, 1.0f + 1.0f * i }, Color{ 0.0f, 0.0f, 0.0f });
+			DrawLine(Point{ 0.25f, -1.0f + -1.0f * i }, Point{ -0.25f, -1.0f + -1.0f * i }, Color{ 0.0f, 0.0f, 0.0f });
 		}
 
 	}
 
 	static void DrawLine(Point p1, Point p2, Color color)
 	{
-		glEnd();
-
 		glBegin(GL_LINE_STRIP);
 		glColor3f(color.r, color.g, color.b);
 		glVertex2f(p1.x, p1.y);
@@ -185,7 +177,7 @@ private:
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		const double aspectRatio = double(width) / double(height);
-		double viewWidth = 2.0;
+		double viewWidth = 20.0;
 		double viewHeight = viewWidth;
 		if (aspectRatio > 1.0)
 		{
@@ -202,6 +194,6 @@ private:
 int main()
 {
 	GLFWInitializer initGLFW;
-	Window window{ 800, 800, "Hello, ellipse" };
+	Window window{ 800, 800, "Task1" };
 	window.Run();
 }
