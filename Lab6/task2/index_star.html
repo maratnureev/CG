@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="styles.css" />
+  <script src="./index.mjs" type="module"></script>
+  <title>Title</title>
+</head>
+
+<body>
+<canvas id="canvas"></canvas>
+
+<script id="vertShader" type="shader-code">
+        varying highp vec2 vUv;
+        void main() {
+            vUv = uv;
+			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+		}
+    </script>
+
+<script id="fragShader" type="shader-code">
+        uniform vec2 resolution;
+        uniform vec4 smileColor;
+        varying highp vec2 vUv;
+
+        vec4 _OutlineColor = vec4(1.0,1.0,1.0,1.0);
+        vec4 _FrontColor = vec4(1,0,0,1.0);
+
+        float pi=3.14159;
+        float _Antialias=0.01;
+
+        vec4 line(vec2 point1, vec2 point2, float width) {
+            vec2 dir0 = point2 - point1;
+            vec2 dir1 = vUv - point1;
+            float h = clamp(dot(dir1, dir0)/dot(dir0, dir0), 0.0, 1.0);
+            float d = (length(dir1 - dir0 * h) - width * 0.5);
+            float w = fwidth(0.5*d) * 2.0;
+            vec4 layer0 = vec4(_OutlineColor.rgb, 0);
+            vec4 layer1 = vec4(_FrontColor.rgb, 1.-smoothstep(-w, w, d));
+
+            return mix(layer0, layer1, layer1.a);
+        }
+
+        void main()
+        {
+            vec4 layers[5];
+            float d=0.0;
+            vec2 degree[6];
+            for(int i=0;i<=4;i++)
+            {
+                degree[i+1]=vec2(cos(d*pi/180.0),sin((d*pi)/180.0));
+                d+=72.0;
+            }
+
+            for(int i=1;i<6;i++){
+                vec2 point1=vec2(0.0,0.0);
+                if(i<=2)
+                    point1=degree[i+3];
+                else
+                    point1=degree[i-2];
+
+                vec4 temp=line(degree[i],point1,0.1);
+                gl_FragColor=mix(gl_FragColor,temp,temp.a);
+            }
+        }
+
+    </script>
+<script id="fragShader1" type="shader-code">
+        uniform vec2 resolution;
+        varying highp vec2 vUv;
+        void main() {
+            if (vUv.y < 1.0 / 3.0) {
+                gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+            }
+            else if (vUv.y < 2.0 / 3.0) {
+                gl_FragColor = vec4(0.0,0.0,1.0,1.0);
+            }
+            else if (vUv.y < 1.0) {
+                gl_FragColor = vec4(1.0,1.0,1.0,1.0);
+            }
+        }
+    </script>
+</body>
+
+</html>

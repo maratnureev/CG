@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles.css" />
+    <script src="./index.mjs" type="module"></script>
+    <title>Title</title>
+</head>
+
+<body>
+<canvas id="canvas"></canvas>
+
+<script id="vertShader" type="shader-code">
+        varying highp vec2 vUv;
+        void main() {
+            vUv = uv;
+			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+		}
+    </script>
+
+<script id="fragShader" type="shader-code">
+        uniform vec2 resolution;
+        uniform vec4 smileColor;
+        varying highp vec2 vUv;
+
+        float square(float value) {
+            return value * value;
+        }
+
+        float convertRgb(float value) {
+            return value / 256.0;
+        }
+
+        float normalizeX(float value) {
+            return value / resolution.x;
+        }
+
+        float normalizeY(float value) {
+            return value / resolution.y;
+        }
+
+        vec2 normalizeVec2(vec2 value) {
+            return value / resolution;
+        }
+
+        void rectangle(float x, float y, float width, float height, vec4 color) {
+            float nX = normalizeX(x);
+            float nY = normalizeY(y);
+
+            float nWidth = normalizeX(width);
+            float nHeight = normalizeY(height);
+
+            if ((vUv.x >= nX) && (vUv.x <= nX + nWidth) && (vUv.y >= nY) && (vUv.y <= nY + nHeight)) {
+                gl_FragColor = color;
+            }
+        }
+
+        void ellipse(vec2 center, float strokeWidth, float rx, float ry) {
+            vec2 normalizeCenter = normalizeVec2(center);
+            float x2 = square(vUv.x - normalizeCenter.x);
+            float y2 = square(vUv.y - normalizeCenter.y);
+
+            float radiusX = normalizeX(rx);
+            float radiusY = normalizeY(ry);
+
+            float radius2x = normalizeX(rx + strokeWidth);
+            float radius2y = normalizeY(ry + strokeWidth);
+
+            if ((x2 / square(radiusX) + y2 / square(radiusY) >= 1.0)
+                && (x2 / square(radius2x) + y2 / square(radius2y) <= 1.0)) {
+                gl_FragColor = vec4(0.0,0.0,0.0,1.0);
+            }
+        }
+
+        void ring() {
+            float radius = 300.0;
+            float strokeWidth = 30.0;
+            vec2 center = vec2(683, 381);
+
+            ellipse(center, strokeWidth, radius, radius);
+        }
+
+        void main() {
+            gl_FragColor = vec4(1.0,1.0,1.0,1.0);
+            ring();
+        }
+    </script>
+<script id="fragShader1" type="shader-code">
+        uniform vec2 resolution;
+        varying highp vec2 vUv;
+        void main() {
+            if (vUv.y < 1.0 / 3.0) {
+                gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+            }
+            else if (vUv.y < 2.0 / 3.0) {
+                gl_FragColor = vec4(0.0,0.0,1.0,1.0);
+            }
+            else if (vUv.y < 1.0) {
+                gl_FragColor = vec4(1.0,1.0,1.0,1.0);
+            }
+        }
+    </script>
+</body>
+
+</html>
