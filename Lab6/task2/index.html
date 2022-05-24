@@ -21,7 +21,6 @@
 
 <script id="fragShader" type="shader-code">
         uniform vec2 resolution;
-        uniform vec4 smileColor;
         varying highp vec2 vUv;
 
         float square(float value) {
@@ -44,28 +43,16 @@
             return value / resolution;
         }
 
-        void rectangle(float x, float y, float width, float height, vec4 color) {
-            float nX = normalizeX(x);
-            float nY = normalizeY(y);
-
-            float nWidth = normalizeX(width);
-            float nHeight = normalizeY(height);
-
-            if ((vUv.x >= nX) && (vUv.x <= nX + nWidth) && (vUv.y >= nY) && (vUv.y <= nY + nHeight)) {
-                gl_FragColor = color;
-            }
-        }
-
-        void ellipse(vec2 center, float strokeWidth, float rx, float ry) {
+        void circle(vec2 center, float strokeWidth, float r) {
             vec2 normalizeCenter = normalizeVec2(center);
             float x2 = square(vUv.x - normalizeCenter.x);
             float y2 = square(vUv.y - normalizeCenter.y);
 
-            float radiusX = normalizeX(rx);
-            float radiusY = normalizeY(ry);
+            float radiusX = normalizeX(r);
+            float radiusY = normalizeY(r);
 
-            float radius2x = normalizeX(rx + strokeWidth);
-            float radius2y = normalizeY(ry + strokeWidth);
+            float radius2x = normalizeX(r + strokeWidth);
+            float radius2y = normalizeY(r + strokeWidth);
 
             if ((x2 / square(radiusX) + y2 / square(radiusY) >= 1.0)
                 && (x2 / square(radius2x) + y2 / square(radius2y) <= 1.0)) {
@@ -76,29 +63,14 @@
         void ring() {
             float radius = 300.0;
             float strokeWidth = 30.0;
-            vec2 center = vec2(683, 381);
+            vec2 center = vec2(960, 530);
 
-            ellipse(center, strokeWidth, radius, radius);
+            circle(center, strokeWidth, radius);
         }
 
         void main() {
             gl_FragColor = vec4(1.0,1.0,1.0,1.0);
             ring();
-        }
-    </script>
-<script id="fragShader1" type="shader-code">
-        uniform vec2 resolution;
-        varying highp vec2 vUv;
-        void main() {
-            if (vUv.y < 1.0 / 3.0) {
-                gl_FragColor = vec4(1.0,0.0,0.0,1.0);
-            }
-            else if (vUv.y < 2.0 / 3.0) {
-                gl_FragColor = vec4(0.0,0.0,1.0,1.0);
-            }
-            else if (vUv.y < 1.0) {
-                gl_FragColor = vec4(1.0,1.0,1.0,1.0);
-            }
         }
     </script>
 </body>

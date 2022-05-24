@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles.css" />
+    <script src="./index.mjs" type="module"></script>
+    <title>Title</title>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+
+    <script id="vertShader" type="shader-code">
+        varying vec2 vUv;
+        uniform float uTime;
+        #define PI 3.14159265359
+
+        void setPosition(vec4 position) {
+            gl_Position = projectionMatrix * modelViewMatrix * position;
+        }
+
+        vec3 fromSpherical(float radius, float phi, float theta) {
+            float sinPhiRadius = sin( phi ) * radius;
+
+            float x = sinPhiRadius * sin( theta );
+            float y = cos( phi ) * radius;
+            float z = sinPhiRadius * cos( theta );
+
+            return vec3(x, y, z);
+        }
+
+        vec3 fromTorus(float radius, float tubeRadius, float phi, float theta) {
+            float cosThetaTubeRadius = cos( theta ) * tubeRadius;
+
+            float x = (radius + cosThetaTubeRadius) * cos(phi);
+            float y = (radius + cosThetaTubeRadius) * sin(phi);
+            float z = tubeRadius * sin(theta);
+
+            return vec3(x, y, z);
+        }
+
+        bool isReverse(float time, float timeToMorph) {
+            float index = floor(time / timeToMorph);
+            return (int(index) % 2) == 1;
+        }
+
+        float resetTime(float time, float timeToMorph) {
+            float index = floor(time / timeToMorph);
+            return (time - (timeToMorph * index));
+        }
+
+        void main() {
+            vUv = uv;
+
+            float phiTorus = (1. - uv.y) * 2.0 * PI;
+            float phiSphere = (1. - uv.y) * PI;
+            float theta = uv.x * PI * 2. + PI;
+            float r = 1.;
+            float rTube = 0.5;
+            vec3 torusCoord = mix(position, fromTorus(r, rTube, phiTorus, theta), 1.0);
+            vec3 sphereCoord = mix(position, fromSpherical(r, phiSphere, theta), 1.0);
+            float timeToMorph = 1000.0;
+            vec3 result;
+            float time = resetTime(uTime, timeToMorph);
+            if (isReverse(uTime, timeToMorph)) {
+                result = mix(sphereCoord, torusCoord, time / timeToMorph);
+            } else {
+                result = mix(torusCoord, sphereCoord, time / timeToMorph);
+            }
+
+            setPosition(vec4(result.x, result.y, result.z, 0.25));
+        }
+    </script>
+
+    <script id="fragShader" type="shader-code">
+
+        float convertRgb(float value) {
+            return value / 256.0;
+        }
+
+        void main() {
+            gl_FragColor = vec4(convertRgb(14.0),convertRgb(209.0),convertRgb(20.0),1.0);
+        }
+    </script>
+</body>
+
+</html>
